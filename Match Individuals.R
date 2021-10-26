@@ -44,16 +44,15 @@ q12_19 <- q12_19 %>% mutate(
 )
 rm(q1_19, q2_19)
 
-q12 <- rbind(q12_19, q12_20)
+q12 <- rbind(q12_19, q12_20) %>% rename(Gender=sex, Quarter=Trimestre_q1, Year=Ano_q1)
+q12$Year <- as.character(q12$Year)
+q12$hh_id <- as.character(q12$hh_id)
 rm(q12_19, q12_20)
 
 
 
 
 # ---------- Analyze dropout first and second quarters ----------
-
-q12 <- q12 %>% rename(Gender=sex, Quarter=Trimestre_q1, Year=Ano_q1)
-q12$Year <- as.character(q12$Year)
 
 q12  %>% group_by(Year) %>%
   summarise(Dropout_rate=sum(dropout)/n()) %>%
@@ -92,39 +91,20 @@ rm(q13)
 q13_20 <- merge(q1_20, q3_20,
                 by=c('hh_id', "birth_month_n", "birth_year_n", "sex", "birth_day_n"),
                 suffixes = c('_q1', '_q3'))
-q12_20 <- q12_20 %>% mutate(
-  dropout = ifelse(goes_to_school_q1=="Sim" & goes_to_school_q3=="Não", 1, 0)
-)
-rm(q1_20, q3_20)
-
-
-# ---------- Match first and third quarter of 2020 ----------
-q13 <- read_csv("data/pnad_2020_q1q3_individual_bothpresent.csv")
-q13$Trimestre <- as.character(q13$Trimestre)
-q13$hh_id <- as.character(q13$hh_id)
-
-# limit sample to people aged approx. 10 to 20
-q1_20 <- q13 %>% filter(Trimestre == "1") %>% filter(birth_year_n < 2011 & birth_year_n >= 2000)
-q3_20 <- q13 %>% filter(Trimestre == "3") %>% filter(birth_year_n < 2011 & birth_year_n >= 2000)
-rm(q13)
-
-q13_20 <- merge(q1_20, q3_20,
-                by=c('hh_id', "birth_month_n", "birth_year_n", "sex", "birth_day_n"),
-                suffixes = c('_q1', '_q3'))
 q13_20 <- q13_20 %>% mutate(
   dropout = ifelse(goes_to_school_q1=="Sim" & goes_to_school_q3=="Não", 1, 0)
 )
 rm(q1_20, q3_20)
 
 # ---------- Match first and third quarter of 2019 ----------
-q13 <- read_csv("data/pnad_2019_q1q3_individual_bothpresent.csv")
-q13$Trimestre <- as.character(q13$Trimestre)
-q13$hh_id <- as.character(q13$hh_id)
+q13_19 <- read_csv("data/pnad_2019_q1q3_individual_bothpresent.csv")
+q13_19$Trimestre <- as.character(q13_19$Trimestre)
+q13_19$hh_id <- as.character(q13_19$hh_id)
 
 # limit sample to people aged approx. 10 to 20
-q1_19 <- q13 %>% filter(Trimestre == "1") %>% filter(birth_year_n < 2011 & birth_year_n >= 2000)
-q3_19 <- q13 %>% filter(Trimestre == "3") %>% filter(birth_year_n < 2011 & birth_year_n >= 2000)
-rm(q13)
+q1_19 <- q13_19 %>% filter(Trimestre == "1") %>% filter(birth_year_n < 2011 & birth_year_n >= 2000)
+q3_19 <- q13_19 %>% filter(Trimestre == "3") %>% filter(birth_year_n < 2011 & birth_year_n >= 2000)
+rm(q13_19)
 
 q13_19 <- merge(q1_19, q3_19,
                 by=c('hh_id', "birth_month_n", "birth_year_n", "sex", "birth_day_n"),
@@ -134,7 +114,9 @@ q13_19 <- q13_19 %>% mutate(
 )
 rm(q1_19, q3_19)
 
-q13 <- rbind(q13_19, q13_20)
+q13 <- rbind(q13_19, q13_20) %>% rename(Gender=sex, Quarter=Trimestre_q1, Year=Ano_q1)
+q13$Trimestre <- as.character(q13$Trimestre)
+q13$hh_id <- as.character(q13$hh_id)
 rm(q13_19, q13_20)
 
 
