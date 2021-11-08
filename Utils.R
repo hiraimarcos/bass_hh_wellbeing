@@ -119,7 +119,9 @@ get_dummies <- function(df){
     income_3=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money=="[1SM]+1 a [2SM]", 1, 0)),# third income bracket 1 to 2 minimum salaries
     income_4=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money=="[2SM]+1 a [3SM]", 1, 0)), # Fourth income group 2 to 3 minimum salaries
     income_5=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money=="[3SM]+1 a [5SM]", 1, 0)), #fifth income group 3 to 5 minimum salaries
-    income_6=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money %in% c("[5SM]+1 a [10SM]", "[10SM]+1 a [20SM]", "[20SM]+1 ou mais"), 1, 0)) # sixth income bracket 5 or more minimum salaries
+    income_6=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money=="[5SM]+1 a [10SM]", 1, 0)), # sixth income bracket 5 to 10 minimum salaries
+    income_7=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money=="[10SM]+1 a [20SM]", 1,0)),
+    income_8=ifelse(is.na(earn_job_money), 0, ifelse(earn_job_money=="[20SM]+1 ou mais", 1,0))
   )
   return(dummies_df)
 }
