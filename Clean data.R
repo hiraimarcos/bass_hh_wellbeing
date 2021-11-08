@@ -147,3 +147,39 @@ rm(q1_19, q2_19, q3_19, q1_20, q2_20, q3_20, s1_20, s2_20, s3_20,
    m19, m20, s, f, df1920, df1920_hh)
 gc()
 
+
+# ---------- First quarters ----------------------
+df <- get_first_quarters(2018,2019)
+write.csv(df, "data/pnad_2019_2018_q1_individual_bothpresent.csv")
+df <- get_first_quarters(2019,2020)
+write.csv(df, "data/pnad_2020_2019_q1_individual_bothpresent.csv")
+df <- get_first_quarters(2020,2021)
+write.csv(df, "data/pnad_2021_2020_q1_individual_bothpresent.csv")
+rm(df)
+
+
+# ---------- All observations ----------------------
+get_all_obs <- function(year){
+  df1 <- get_data_for_quarter(year, 1)
+  df2 <- get_data_for_quarter(year, 2)
+  df3 <- get_data_for_quarter(year, 3)
+  df4 <- get_data_for_quarter(year, 4)
+  df5 <- get_data_for_quarter(year+1, 1)
+  
+  hh_ids <- intersect(intersect(df5$hh_id, df1$hh_id), intersect(df2$hh_id, df3$hh_id))
+  hh_ids <- intersect(hh_ids, df4$hh_id)
+  
+  df1 <- df1 %>% filter(hh_id %in% hh_ids)
+  df2 <- df2 %>% filter(hh_id %in% hh_ids)
+  df3 <- df3 %>% filter(hh_id %in% hh_ids)
+  df4 <- df4 %>% filter(hh_id %in% hh_ids)
+  df5 <- df5 %>% filter(hh_id %in% hh_ids)
+  
+  return(bind_rows(df1, df2, df3, df4, df5))
+}
+df <- get_all_obs(2018)
+write.csv(df, "data/pnad_all_2018_19_individual_bothpresent.csv")
+df <- get_all_obs(2019)
+write.csv(df, "data/pnad_all_2019_20_individual_bothpresent.csv")
+df <- get_all_obs(2020)
+write.csv(df, "data/pnad_all_2020_21_individual_bothpresent.csv")
