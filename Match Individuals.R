@@ -171,7 +171,76 @@ rm(q12_20_hh, q12_19_hh)
 main12 <- left_join(q12, q12_hh, by=c("hh_id", "Year"))
 write.csv(main12, "data/matched_2020_2019_q12_hh.csv")
 
+# ---------- Match data for first quarter of 2019 and 2020 ---------
+match_first_quarters <- function(df, year){
+  df$Year <- as.character(df$Year)
+  df$hh_id <- as.character(df$hh_id)
+  
+  df <- df %>% mutate(
+    goes_to_school_dum=ifelse(is.na(goes_to_school), 0, ifelse(goes_to_school=="Sim", 1, 0)),
+    not_goes_to_school=ifelse(is.na(goes_to_school), 0, ifelse(goes_to_school=="Não", 1, 0)))
+  
+  y1 <- df %>% filter(Year == year)
+  y2 <- df %>% filter(Year == year+1) %>%
+    select(hh_id, birth_month_n, birth_year_n, Gender, birth_day_n, 
+           goes_to_school_dum, not_goes_to_school)
+  rm(df)
+  
+  mrgd <- merge(y1,y2,
+                    by=c('hh_id', "birth_month_n", "birth_year_n", "Gender", "birth_day_n"),
+                    suffixes = c('_y1', '_y2'))
+  return(mrgd)
+}
+df <- read_csv("data/pnad_2020_2019_q1_individual_bothpresent.csv") %>% rename(Gender=sex, Quarter=Trimestre, Year=Ano)
+mrgd1 <- match_first_quarters(df, 2019)
 
 
+# ---------- Match data for first quarter of 2020 and 2021 ---------
+df <- read_csv("data/pnad_2021_2020_q1_individual_bothpresent.csv") %>% rename(Gender=sex, Quarter=Trimestre, Year=Ano)
+mrgd2 <- match_first_quarters(df, 2020)
 
+# ---------- Match data for first quarter of 2018 and 2019 ---------
+df <- read_csv("data/pnad_2019_2018_q1_individual_bothpresent.csv") %>% rename(Gender=sex, Quarter=Trimestre, Year=Ano)
+mrgd3 <- match_first_quarters(df, 2018)
 
+# ---------- Save matched data as new csv -------------------------
+write.csv(bind_rows(mrgd1, mrgd2, mrgd3), "data/pnad_q1_2018_2019_2020_matched.csv")
+rm(mrgd1, mrgd2, mrgd3)
+
+# ---------- Match data based for all 5 quarters ----------
+match_all_obs <- function(df, year){
+  
+  df <- df %>% mutate(
+    goes_to_school_dum=ifelse(is.na(goes_to_school), 0, ifelse(goes_to_school=="Sim", 1, 0)),
+    not_goes_to_school=ifelse(is.na(goes_to_school), 0, ifelse(goes_to_school=="Não", 1, 0)))
+  
+  df1 <- df %>% filter(Year == year, Quarter == 1)
+  df2 <- df %>% filter(Year == year, Quarter == 2) %>% select(hh_id, birth_month_n, birth_year_n, Gender, birth_day_n, 
+                                                              goes_to_school_dum, not_goes_to_school)
+  df3 <- df %>% filter(Year == year, Quarter == 3) %>% select(hh_id, birth_month_n, birth_year_n, Gender, birth_day_n, 
+                                                             goes_to_school_dum, not_goes_to_school)
+  df4 <- df %>% filter(Year == year, Quarter == 4) %>% select(hh_id, birth_month_n, birth_year_n, Gender, birth_day_n, 
+                                                              goes_to_school_dum, not_goes_to_school)
+  df5 <- df %>% filter(Year == year + 1, Quarter == 1) %>% select(hh_id, birth_month_n, birth_year_n, Gender, birth_day_n, 
+                                                                  goes_to_school_dum, not_goes_to_school)
+  df5 <- merge(df4, df5,
+               by=c('hh_id', "birth_month_n", "birth_year_n", "Gender", "birth_day_n"),
+               suffixes=c("_y1", "_p5")) %>% select(hh_id, birth_month_n, birth_year_n, Gender, birth_day_n, 
+                                                    goes_to_school_dum_p5, not_goes_to_school_p5)
+  df12 <- merge(df1, df2, by=c('hh_id', "birth_month_n", "birth_year_n", "Gender", "birth_day_n"),
+                suffixes=c("_p1", "_p2"))
+  df34 <- merge(df3, df4, by=c('hh_id', "birth_month_n", "birth_year_n", "Gender", "birth_day_n"),
+                suffixes=c("_p3", "_p4"))
+  dfl <- merge(df34, df5, by=c('hh_id', "birth_month_n", "birth_year_n", "Gender", "birth_day_n"))
+  return(merge(dfl, df12, by=c('hh_id', "birth_month_n", "birth_year_n", "Gender", "birth_day_n")))
+}
+
+df1 <- read_csv("data/pnad_all_2018_19_individual_bothpresent.csv") %>% rename(Gender=sex, Quarter=Trimestre, Year=Ano) %>% mutate(across(everything(), as.character))
+mrgd1 <- match_all_obs(df1, 2018)
+df2 <- read_csv("data/pnad_all_2019_20_individual_bothpresent.csv") %>% rename(Gender=sex, Quarter=Trimestre, Year=Ano) %>% mutate(across(everything(), as.character))
+mrgd2 <- match_all_obs(df2, 2019)
+df3 <- read_csv("data/pnad_all_2020_21_individual_bothpresent.csv") %>% rename(Gender=sex, Quarter=Trimestre, Year=Ano) %>% mutate(across(everything(), as.character))
+mrgd3 <- match_all_obs(df3, 2020)
+
+write.csv(bind_rows(mrgd1, mrgd2, mrgd3), "data/pnad_all_2018_2019_2020_matched.csv")
+rm(mrgd1, mrgd2, mrgd3)
