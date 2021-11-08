@@ -149,3 +149,34 @@ aggregate_first <- function(df){
 merge_hh <- function(df1, df2){
   return(merge(df1, df2, by=c("hh_id", "Ano", "Trimestre")))
 }
+
+get_first_quarters <- function(year1, year2){
+  q1_20 <- get_data_for_quarter(year1, 1)
+  q1_21 <- get_data_for_quarter(year2, 1)
+  
+  q1_20 <- q1_20 %>% filter(hh_id %in% q1_21$hh_id)
+  q1_21 <- q1_21 %>% filter(hh_id %in% q1_20$hh_id)
+  
+  df <- rbind(q1_20,q1_21)
+  rm(q1_20,q1_21)
+  return(df)
+}
+
+get_all_obs <- function(year){
+  df1 <- get_data_for_quarter(year, 1)
+  df2 <- get_data_for_quarter(year, 2)
+  df3 <- get_data_for_quarter(year, 3)
+  df4 <- get_data_for_quarter(year, 4)
+  df5 <- get_data_for_quarter(year+1, 1)
+  
+  hh_ids <- intersect(intersect(df5$hh_id, df1$hh_id), intersect(df2$hh_id, df3$hh_id))
+  hh_ids <- intersect(hh_ids, df4$hh_id)
+  
+  df1 <- df1 %>% filter(hh_id %in% hh_ids)
+  df2 <- df2 %>% filter(hh_id %in% hh_ids)
+  df3 <- df3 %>% filter(hh_id %in% hh_ids)
+  df4 <- df4 %>% filter(hh_id %in% hh_ids)
+  df5 <- df5 %>% filter(hh_id %in% hh_ids)
+  
+  return(bind_rows(df1, df2, df3, df4, df5))
+  }
